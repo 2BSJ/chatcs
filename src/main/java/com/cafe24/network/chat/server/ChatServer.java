@@ -6,7 +6,9 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ChatServer {
 
@@ -16,6 +18,7 @@ public class ChatServer {
 		
 		ServerSocket serverSocket = null;
 		List<PrintWriter> pwList = new ArrayList<PrintWriter>();
+		Map<String,PrintWriter> userList = new HashMap<String,PrintWriter>();
 		try {
 			//1.serverSocket으로 서버소켓 생성.
 			serverSocket = new ServerSocket();
@@ -27,7 +30,7 @@ public class ChatServer {
 				
 				Socket socket = serverSocket.accept();//안들어오면 아직 blocking 상태
 				
-				Thread thread = new ChatServerThread(socket,pwList);
+				Thread thread = new ChatServerThread(socket,pwList,userList);
 				thread.start();
 				
 			}

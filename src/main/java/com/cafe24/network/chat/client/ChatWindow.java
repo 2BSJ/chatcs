@@ -29,6 +29,7 @@ public class ChatWindow {
 	private TextField textField;
 	private TextArea textArea;
 	private Socket socket;
+	private String nickname;
 
 	public ChatWindow(String name,Socket socket) {
 		frame = new Frame(name);
@@ -37,6 +38,7 @@ public class ChatWindow {
 		textField = new TextField();
 		textArea = new TextArea(30, 80);
 		this.socket = socket;
+		this.nickname=name;
 		new ChatClientThread(socket).start();
 	}
 	
@@ -64,10 +66,19 @@ public class ChatWindow {
 			public void keyPressed(KeyEvent e) {
 			
 			//	키값에 관한 이벤트 처리가능함.
-				char keyCode = e.getKeyChar();
+				//char keyCode = e.getKeyChar();
+				int keyCode=e.getKeyCode(); // arrow키는 keycode로 해야 먹고 keychar는 안먹음
+				//System.out.println(keyCode1 + ":" + KeyEvent.VK_UP);
+				
 				if(keyCode == KeyEvent.VK_ENTER) {//엔터눌렀을때 감지함
 					sendMessage();
 				}
+				
+				if(keyCode == KeyEvent.VK_UP) {
+					sendMessage("COMMAND_UP");
+				}
+				
+
 			
 			}
 			
@@ -134,15 +145,23 @@ public class ChatWindow {
 			pw = new PrintWriter(
 					new OutputStreamWriter(socket.getOutputStream(),"utf-8"),true );
 			String message = textField.getText();
+	
 			if("".equals(message)) { //엔터들어오면 프린트라이트를 따로 출력해줌
 				pw.println("MSG: \r\n");
+			}
+//			else if(message.indexOf("/w")>-1) { //귓속말
+//				pw.println("WP:"+nickname+":"+message);
+//			}
+			
+			else if(message.charAt(0)=='/' && message.charAt(1)=='w') {
+				pw.println("WP:"+nickname+":"+message);
 			}
 			else
 				pw.println("MSG:" + message+"\r\n");
 			//서버가 받고 브로드캐스팅해준다.
 			
-			textField.setText("");//메세지를 전송했으면 텍스트창을 비워줌.
-			textField.requestFocus();//커서를 표시해줌 다시
+//			textField.setText("");//메세지를 전송했으면 텍스트창을 비워줌.
+//			textField.requestFocus();//커서를 표시해줌 다시
 			
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
@@ -151,15 +170,29 @@ public class ChatWindow {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		
-		
-		
-		
-		
 		//test
 		
 		//updateTextArea(message);
+	}
+	
+	private void sendMessage(String up) {
+		try {
+			pw = new PrintWriter(
+					new OutputStreamWriter(socket.getOutputStream(),"utf-8"),true );
+			String message = "/up";
+	
+			pw.println("COMMAND_UP:" + message);
+			
+			
+			//textField.requestFocus();//커서를 표시해줌 다시
+			
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -173,10 +206,22 @@ public class ChatWindow {
 	    public void run() {
 	      try {
 	        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream(),"utf-8"));
+	        
 	        while(true) {
 	          String message = br.readLine();
-	  
-	          updateTextArea(message);
+	          if("equals".equals(message)) {
+	        	  finish(pw); //아이디 같으면 종료
+	          }
+	          if(message.charAt(0)=='/' && message.charAt(1)=='r' && message.charAt(2)=='e') {
+	        	  textField.setText(message.substring(3));//메세지를 전송했으면 텍스트창을 비워줌.
+					textField.requestFocus();//커서를 표시해줌 다시
+	          }
+	          else {
+	        	  textField.setText("");//메세지를 전송했으면 텍스트창을 비워줌.
+				textField.requestFocus();//커서를 표시해줌 다시
+				updateTextArea(message);
+	          }
+	          
 	        }
 	      }
 	      catch (SocketException e) {

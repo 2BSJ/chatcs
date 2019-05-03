@@ -36,16 +36,17 @@ public class ChatClientApp {
 		try {
 			//1.소켓 만들고 연결
 			socket.connect(new InetSocketAddress(SERVER_IP,SERVER_PORT));
-			new ChatWindow(name,socket).show();
 			
+			new ChatWindow(name,socket).show();
 			//2.iostream 작업해주고
 			PrintWriter pw = new PrintWriter(
 					new OutputStreamWriter(socket.getOutputStream(),"utf-8"),true );
-			//BufferedReader br = new BufferedReader(
-			//	new InputStreamReader(socket.getInputStream(),"utf-8") );
+			BufferedReader br = new BufferedReader(
+				new InputStreamReader(socket.getInputStream(),"utf-8") );
 			
 			//3.join 프로토콜을 보낸다 join ok가 나오면
-			pw.println("JOIN:"+name+"\r\n");
+			pw.println("JOIN:"+name+":\r\n");
+
 			pw.flush();
 			
 		} catch (IOException e) {
